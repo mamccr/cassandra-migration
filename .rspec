@@ -1,0 +1,4 @@
+--format progress
+--format html
+--out doc/report.html
+--require spec_helper
