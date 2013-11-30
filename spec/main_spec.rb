@@ -16,7 +16,7 @@ describe Main do
 		it "should exit with an appropriate message if all required options aren't given" do
 			opts = {:original_version => "a", :final_version => "b", :original_config => "c"}
 			Trollop.should_receive(:options).and_return opts
-			Trollop.should_receive(:die).with Main::MISSING_OPTION
+			Trollop.should_receive(:die).with(Main::MISSING_OPTION)
 
 			# for any subsequent checks, since we mocked the first one which otherwise would have exited
 			Trollop.stub :die
@@ -44,11 +44,11 @@ describe Main do
 	describe Main, ".identify_migrations" do
 		it "should exit with an appropriate message if migration data is missing for the source version" do
 			main = Main.new({:original_version => "13"})
-			main.should_receive(:load).with("migrations/cassandra_13").and_raise(LoadError)
+			File.should_receive(:exists?).with("#{Main::MIGRATIONS_DIR}/cassandra_13").and_return false
 			Trollop.should_receive(:die) =~ /#{Main::MISSING_MIGRATION}/
 			# for any subsequent checks, since we mocked the first one which otherwise would have exited
 			Trollop.stub :die 
-			main.stub :load
+			File.stub :exists?
 			main.identify_migrations
 		end
 	end

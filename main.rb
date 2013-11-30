@@ -1,5 +1,6 @@
 $: << File.dirname(__FILE__)
 require "trollop"
+require "migrator"
 
 # Contains the central control logic for the migration.  Parses user input from the command line
 # and delegates tasks to other helpers.
@@ -8,22 +9,15 @@ class Main
 	MISSING_OPTION = "Some options are missing"
 	MISSING_FILE = "could not be found.  Please make sure the file exists"
 	MISSING_MIGRATION = "No migration data for version"
+	MIGRATIONS_DIR = "#{File.dirname(__FILE__)}/migrations"
 
 	# verifies that migrations can be found for the to and from versions
 	def identify_migrations
-		orig = @opts[:original_version]
-		begin
-			load "migrations/cassandra_#{orig}"
-		rescue LoadError
-			Trollop::die "#{MISSING_MIGRATION} #{orig}"
-		end
+		orig = "cassandra_#{@opts[:original_version]}"
+		Trollop::die "#{MISSING_MIGRATION} #{orig}" unless File.exists? "#{MIGRATIONS_DIR}/#{orig}"
 
-		final = @opts[:final_version]
-		begin
-			load "migrations/cassandra_#{final}"
-		rescue LoadError
-			Trollop::die "#{MISSING_MIGRATION} #{final}"
-		end
+		final = "cassandra_#{@opts[:final_version]}"
+		Trollop::die "#{MISSING_MIGRATION} #{final}" unless File.exists? "#{MIGRATIONS_DIR}/#{final}"
 	end
 
 	# parses command line options and stores them in @opts
@@ -41,10 +35,10 @@ cassandra_migrate [options]
   		opt :original_version, "The version of Cassandra to migrate from", :type => String
   		opt :final_version, "The version of Cassandra to migrate to", :type => String
 		end
-		if !@opts.include? :original_config or 
-			 !@opts.include? :final_config or 
-			 !@opts.include? :original_version or 
-			 !@opts.include? :final_version
+		if @opts[:original_config].nil? or 
+			 @opts[:final_config].nil? or 
+			 @opts[:original_version].nil? or 
+			 @opts[:final_version].nil?
   		Trollop::die MISSING_OPTION
   	end
   	Trollop::die "#{@opts[:original_config]} #{MISSING_FILE}" unless File.exist?(@opts[:original_config])
@@ -54,6 +48,8 @@ cassandra_migrate [options]
 	def run
 		process_params
 		identify_migrations
+		migrator = Migrator.new(@opts[:original_version], @opts[:final_version])
+		puts ">>>>>>>#{migrator.human_answers}"
 	end
 
 end
