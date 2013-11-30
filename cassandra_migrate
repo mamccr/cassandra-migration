@@ -3,4 +3,4 @@
 $: << File.dirname(__FILE__)
 require "main"
 
-Main.process_params
+Main.new.run
