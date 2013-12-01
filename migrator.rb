@@ -1,27 +1,19 @@
 $: << File.dirname(__FILE__)
 require "cassandra_version"
-require "cli"
 
 # Determines the full set of migrations between a start and end point, and calculates the
 # set of additional properties needed between those points
 class Migrator
 
-	# Implementation could vary here.  All that matters is that the module provide an ask
-	# method with the same signature.
-	include Cli
-	
 	STRING = "string"
 	ARRAY = "array"
 	NUMBER = "number"
 	HASH = "hash"
 	MIGRATIONS_DIR = "#{File.dirname(__FILE__)}/migrations"
 
-	attr_reader :properties
-
 	def initialize start_version, end_version
 		@start_version = start_version
 		@end_version = end_version
-		@properties = []
 		@answers = {}
 	end
 
@@ -34,38 +26,45 @@ class Migrator
 		applicable_migrations = []
 		sorted_list.each do |migration|
 			applicable_migrations << migration if in_range
-			if !in_range and (migration == "Cassandra_#{@start_version}")
+			if !in_range and (File::basename(migration) == "cassandra_#{@start_version}")
 				in_range = true
 			end
-			if in_range and (migration == "Cassandra_#{@end_version}")
+			if in_range and (File::basename(migration) == "cassandra_#{@end_version}")
 				return applicable_migrations
 			end
 		end
 	end
 
 	def add_property name, type, default_value, description
-		@properties << {name: name, type: type, default_value: default_value, description: description}
+		@added_properties << {name: name, type: type, default_value: default_value, description: description}
 	end
 
 	def remove_property name
-		# TODO
+		@removed_properties << name
 	end
 
-	# Populates @properties with the prompts required to be able to migrate from start to finish
-	def gather_added_properties
+	# Determines what prompts must be removed and what prompts must be added to be able to migrate from start to finish
+	def calculate_changes
+		@added_properties = []
+		@removed_properties = []
 		all_migrations = find_all_migrations
 		all_migrations.each do |migration_name|
 			eval File.read(migration_name)
 		end
 	end
 
-	# collects values for all new properties
-	def human_answers
-		gather_added_properties
-		@properties.each do |property|
-			name = property[:name]
-			@answers[name] = ask(name, property[:default_value], property[:description])
-		end
+	# The list of properties that must be added to migrate from start to finish
+	def added_properties
+		return @added_properties unless @added_properties.nil?
+		calculate_changes
+		return @added_properties
+	end
+
+	# The list of properties that must be removed to migrate from start to finish
+	def removed_properties
+		return @removed_properties unless @removed_properties.nil?
+		calculate_changes
+		return @removed_properties
 	end
 
 end

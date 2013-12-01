@@ -1,6 +1,8 @@
 $: << File.dirname(__FILE__)
 require "trollop"
 require "migrator"
+require "prompter"
+require "yaml"
 
 # Contains the central control logic for the migration.  Parses user input from the command line
 # and delegates tasks to other helpers.
@@ -48,8 +50,30 @@ cassandra_migrate [options]
 	def run
 		process_params
 		identify_migrations
+
+		# For the moment, we're only prompting for the migrations for a single machine,
+		# but we could have multiple migrators for multiple machines, and those could
+		# be aggregated here prior to prompting in order to bring multiple machines
+		# of varying versions up to a common configuration for a single version.
 		migrator = Migrator.new(@opts[:original_version], @opts[:final_version])
-		puts ">>>>>>>#{migrator.human_answers}"
+		answers = Prompter.new.human_answers migrator.added_properties
+		write_config answers, migrator.removed_properties
+	end
+
+	# Reads in the original config file, applies the diffs determined from our migrations,
+	# and writes them back out to the destination config file
+	def write_config answers, removed_properties
+		original_config = YAML.load_file(@opts[:original_config])
+		
+		removed_properties.each do |property|
+			original_config.delete property
+		end
+		
+		answers.each do |property, answer|
+			original_config[property] = answer
+		end
+
+		File.open(@opts[:final_config], "w") {|file| file.write original_config.to_yaml}
 	end
 
 end
