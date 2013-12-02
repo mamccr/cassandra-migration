@@ -9,11 +9,10 @@ class Prompter
 	include Cli
 	
 	def initialize
-		say <<-EOS
-Congratulations on upgrading Cassandra!  A few configuration options have changed.  For each new option given below, please read
-the description and enter the value you want the property to have.  For options that have a |default answer|, you can just hit
-enter to accept the default.
-EOS
+		say ("*" * 80) + "Congratulations on upgrading Cassandra!  A few configuration options have changed. \
+For each new option given below, please read the description preceeding the prompt and enter the value you \
+want the property to have.  For options that have a |default answer|, you can just hit enter to accept the default."
+		say "*" * 80
 	end
 
 	# collects values for all new properties

@@ -14,6 +14,10 @@ SimpleCov.start do
   add_filter "/spec/"
   add_filter "/trollop*"
 
+  # don't bother with prompter, because it's just glue code.  It would be a bunch of mocked-up white box
+  # testing that wouldn't provide much value
+  add_filter "/prompter.rb"
+
   # don't bother evaluating extremely short files
   add_filter do |source_file|
     source_file.lines.count <= 10 

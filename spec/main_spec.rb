@@ -53,4 +53,23 @@ describe Main do
 		end
 	end
 
+	describe Main, ".modify_config" do
+
+		before :each do
+			@props = {
+				foo1: "bar1",
+				foo2: "bar2",
+				foo3: "bar3"
+			}
+		end
+
+		it "should remove all properties that need to be removed" do
+			Main.modify_config(@props, {}, [:foo2]).should == {foo1: "bar1", foo3: "bar3"}
+		end
+
+		it "should add all properties that need to be added" do
+			Main.modify_config(@props, {foo4: "bar4"}, []).should == @props.merge({foo4: "bar4"})
+		end
+	end
+
 end

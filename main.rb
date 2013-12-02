@@ -57,14 +57,13 @@ cassandra_migrate [options]
 		# of varying versions up to a common configuration for a single version.
 		migrator = Migrator.new(@opts[:original_version], @opts[:final_version])
 		answers = Prompter.new.human_answers migrator.added_properties
-		write_config answers, migrator.removed_properties
+		final_config = Main.modify_config YAML.load_file(@opts[:original_config]), answers, migrator.removed_properties
+		File.open(@opts[:final_config], "w") {|file| file.write(final_config.to_yaml indentation:4)}		
 	end
 
-	# Reads in the original config file, applies the diffs determined from our migrations,
-	# and writes them back out to the destination config file
-	def write_config answers, removed_properties
-		original_config = YAML.load_file(@opts[:original_config])
-		
+	# Applies the diffs determined from our migrations,
+	# and returns the modified config object
+	def self.modify_config original_config, answers, removed_properties
 		removed_properties.each do |property|
 			original_config.delete property
 		end
@@ -72,8 +71,7 @@ cassandra_migrate [options]
 		answers.each do |property, answer|
 			original_config[property] = answer
 		end
-
-		File.open(@opts[:final_config], "w") {|file| file.write original_config.to_yaml}
+		return original_config
 	end
 
 end

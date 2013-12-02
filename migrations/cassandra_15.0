@@ -1,0 +1,1 @@
+add_property "max_hints_delivery_threads", "number", 2, "Number of threads with which to deliver hints;\n\nConsider increasing this number when you have multi-dc deployments, since cross-dc handoff tends to be slower"

@@ -1,5 +1,5 @@
-cluster_name: "My Cluster"
+cluster_name: My Cluster
 num_tokens: 256
 data_file_directories:
-­	- /my/cassandra/data/
+    - /my/cassandra/data/
 memtable_flush_queue_size: 4
