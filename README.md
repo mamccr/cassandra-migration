@@ -9,11 +9,8 @@ Users specify a start and end version, and point the script to their existing ca
 
 Migration data is specified via a very simple DSL, consisting of two statements:
 
-add_property [name], [type: "string", "number", "hash", "array"], [default value], [description]
-
-and
-
-remove_property [name]
+1. add_property [name], [type: "string", "number", "hash", "array"], [default value], [description]
+2. remove_property [name]
 
 Note that names, default values that are strings, and descriptions should all be quoted.  Migrations are stored in the migrations folder at the root of the project, and are identified by a naming convention that includes the version of cassandra achieved by applying that migration.  So to get to version 14.0 from the previous version, cassandra-migration would look for 'migrations/cassandra_14.0'.
 
@@ -36,7 +33,7 @@ cassandra_migrate -o test_data/cassandra_13.yaml -f test_data/cassandra_14.yaml 
 
 Testing
 -------
-To run unit tests, you must have rspec and simplecov gems installed.  The easiest way to do this is to install bundler ('gem install bundler') and then run 'bundle install' from the project root.  Once the appropriate gems have been installed, simply run 'rspec' to execute all tests.  Coverage reports are at coverage/index.html, and the test report is at doc/report.html.
+To run unit tests, you must have the rspec and simplecov gems installed.  The easiest way to do this is to install bundler ('gem install bundler') and then run 'bundle install' from the project root.  Once the appropriate gems have been installed, simply run 'rspec' to execute all tests.  Coverage reports are at coverage/index.html, and the test report is at doc/report.html.
 
 Future Enhancements
 -------------------
